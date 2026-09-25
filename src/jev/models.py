@@ -69,6 +69,13 @@ class NoulAnswer:
     def probability(self) -> float:
         return self.noul
 
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            "type": self.type,
+            "noul": self.noul,
+            "probability": self.probability,
+        }
+
 
 @dataclass
 class ChoiceAnswer:
@@ -76,6 +83,14 @@ class ChoiceAnswer:
     confidence: float
     probabilities: Dict[str, float]
     type: str = "choice"
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            "type": self.type,
+            "choice": self.choice,
+            "confidence": self.confidence,
+            "probabilities": self.probabilities,
+        }
 
 
 @dataclass
@@ -85,6 +100,15 @@ class ScoreAnswer:
     probabilities: Dict[str, float]
     legend: Dict[str, str] = field(default_factory=dict)
     type: str = "score"
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            "type": self.type,
+            "score": self.score,
+            "confidence": self.confidence,
+            "probabilities": self.probabilities,
+            "legend": self.legend,
+        }
 
 
 Answer = Union[NoulAnswer, ChoiceAnswer, ScoreAnswer]
@@ -97,6 +121,17 @@ class Decision:
     usage: Dict[str, int]
     latency_ms: float = 0.0
     raw_response: Dict[str, Any] = field(default_factory=dict)
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            "model": self.model,
+            "latency_ms": self.latency_ms,
+            "usage": self.usage,
+            "answers": {
+                k: v.to_dict() for k, v in self.answers.items()
+            },
+            "raw_response": self.raw_response,
+        }
 
     @classmethod
     def from_api_response(

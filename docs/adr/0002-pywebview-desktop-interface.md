@@ -1,0 +1,3 @@
+# pywebview Desktop Studio for Question Authoring and Evaluation
+
+We replace the terminal wizard (`questionary`) with a native desktop webview (`pywebview`) embedding a zero-build HTML/CSS/JS single-page studio. Authoring typed Jev Questions (binary Noul hypotheses, multi-candidate Choice criteria, and ordinal Score levels) and inspecting multi-variable probabilistic distributions require multi-field forms and side-by-side visual meters that are cumbersome in terminal prompts. The `pywebview` window uses an in-process `js_api` bridge without opening network ports, preserving standalone distribution via `uvx` while delivering an interactive 3-pane evaluation studio.

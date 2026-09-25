@@ -106,3 +106,14 @@ def test_decision_from_api_response():
     assert score_ans.score == 1.45
     assert score_ans.legend["1"] == "Annoyed"
     assert score_ans.probabilities["1"] == 0.90
+
+    # Decision serialization
+    serialized = decision.to_dict()
+    assert serialized["model"] == "jev-1.13.0"
+    assert serialized["latency_ms"] == 125.4
+    assert serialized["answers"]["is_urgent"]["type"] == "noul"
+    assert serialized["answers"]["is_urgent"]["probability"] == 0.95
+    assert serialized["answers"]["department"]["type"] == "choice"
+    assert serialized["answers"]["department"]["choice"] == "billing"
+    assert serialized["answers"]["frustration"]["type"] == "score"
+    assert serialized["answers"]["frustration"]["score"] == 1.45
