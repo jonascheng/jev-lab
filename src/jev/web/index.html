@@ -617,25 +617,30 @@
       font-weight: 600;
       padding: 4px 0;
       user-select: none;
+      transition: color 0.15s ease;
     }
 
     details[open] summary {
       color: var(--text-muted);
+      margin-bottom: 6px;
     }
 
     .raw-json {
       background: var(--bg-base);
       border: 1px solid var(--border);
       border-radius: 6px;
-      padding: 8px;
+      padding: 10px;
       font-family: var(--font-mono);
       font-size: 11px;
       color: #a5b4fc;
-      max-height: 220px;
+      min-height: 260px;
+      height: calc(100vh - 360px);
+      max-height: calc(100vh - 220px);
       overflow-y: auto;
       white-space: pre-wrap;
       word-break: break-all;
       user-select: text;
+      resize: vertical;
     }
 
     /* Modal / Drawer */
@@ -858,7 +863,7 @@
           Configure State & Questions, then click <strong>▶ Run Decision</strong> to evaluate.
         </div>
 
-        <div id="decisionResults" style="display: none; display: flex; flex-direction: column; gap: 12px;">
+        <div id="decisionResults" style="display: none; flex-direction: column; gap: 12px;">
           <div class="metrics-bar">
             <div class="metric-item">
               <div class="metric-value" id="resLatency">—</div>
@@ -1402,6 +1407,7 @@
       const runBtn = document.getElementById("runBtn");
       runBtn.disabled = true;
       runBtn.innerText = "⏳ Evaluating...";
+      renderRawJsonResponse("Waiting for Cloudflare Workers AI response...");
 
       // Parse state (if valid JSON, pass parsed object, otherwise string)
       let parsedState = appState.state;
@@ -1412,6 +1418,7 @@
       try {
         const res = await bridge.evaluate(parsedState, appState.questions);
         if (!res.success) {
+          renderRawJsonResponse({ error: res.error });
           if (res.error && res.error.includes("No Cloudflare credentials")) {
             openSettingsModal();
             showAlert("settingsAlert", "Please configure Cloudflare credentials before running evaluation.", "error");
@@ -1423,11 +1430,23 @@
 
         renderDecisionResults(res.decision);
       } catch (err) {
+        renderRawJsonResponse({ error: String(err) });
         alert(`Evaluation invocation failed:\n${err}`);
       } finally {
         runBtn.disabled = false;
         runBtn.innerText = "▶ Run Decision";
       }
+    }
+
+    function renderRawJsonResponse(data) {
+      const oldPre = document.getElementById("rawJsonResponse");
+      if (!oldPre) return;
+      const newPre = document.createElement("pre");
+      newPre.className = "raw-json";
+      newPre.id = "rawJsonResponse";
+      newPre.textContent = typeof data === "string" ? data : JSON.stringify(data, null, 2);
+      newPre.scrollTop = 0;
+      oldPre.parentNode.replaceChild(newPre, oldPre);
     }
 
     // Render Decision Results
@@ -1440,7 +1459,7 @@
       document.getElementById("resLatency").innerText = `${decision.latency_ms?.toFixed(1) || 0}ms`;
       document.getElementById("resTokens").innerText = `${decision.usage?.input_tokens || 0} / ${decision.usage?.output_tokens || 0}`;
       document.getElementById("resModel").innerText = decision.model || "typesafe/jev";
-      document.getElementById("rawJsonResponse").innerText = JSON.stringify(decision.raw_response, null, 2);
+      renderRawJsonResponse(decision.raw_response);
 
       const list = document.getElementById("answersList");
       list.innerHTML = "";
