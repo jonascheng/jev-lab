@@ -26,7 +26,7 @@ uv run jev
   - `choice`: Categorical classification with candidate-specific criteria, returning predicted label, confidence, and distribution.
   - `score`: Ordinal rating along ordered scale levels, returning calibrated numeric score, confidence, and distribution.
 - **Visual Question Builder**: Interactively author, rename, edit criteria, duplicate, and delete typed Question primitives with live validation.
-- **Pre-built Presets**: One-click demo scenarios for Support Ticket Triage, Content Moderation, and Financial Fraud Review.
+- **Pre-built Presets**: One-click demo scenarios for OT / Industrial Cybersecurity (HMI Normal Operation, MES Server Baseline, SCADA Compromised Incident).
 - **Persistent Credentials**: Manage Cloudflare `ACCOUNT_ID` and `API_TOKEN` in the Settings drawer with connection verification, saved locally to `~/.config/jev/credentials.json` (mode `0600`).
 - **Session Auto-Save & Export**: Work is continuously cached in local storage; full Question suites and State can be exported or imported as JSON files.
 - **Rich Dashboard**: Colored probability bars, confidence ratings, distribution breakdowns, token counts, and execution latency.

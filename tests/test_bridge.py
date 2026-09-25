@@ -97,11 +97,11 @@ def test_get_presets():
     bridge = JevBridge()
     presets = bridge.get_presets()
     assert len(presets) >= 3
-    assert any(p["id"] == "support_triage" for p in presets)
-    support = next(p for p in presets if p["id"] == "support_triage")
-    assert "questions" in support
-    assert "refund_requested" in support["questions"]
-    assert support["questions"]["refund_requested"]["type"] == "noul"
+    assert any(p["id"] == "ot_hmi_normal" for p in presets)
+    hmi = next(p for p in presets if p["id"] == "ot_hmi_normal")
+    assert "questions" in hmi
+    assert "anomaly_detected" in hmi["questions"]
+    assert hmi["questions"]["anomaly_detected"]["type"] == "noul"
 
 
 def test_evaluate_no_credentials(monkeypatch):

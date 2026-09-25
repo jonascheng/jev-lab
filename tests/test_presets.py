@@ -24,15 +24,17 @@ def test_all_presets_have_three_primitives():
 
 
 def test_get_preset_by_id():
-    p = get_preset_by_id("support_triage")
-    assert p.id == "support_triage"
+    p = get_preset_by_id("ot_hmi_normal")
+    assert p.id == "ot_hmi_normal"
+    assert "asset_classification" in p.questions
+    assert "anomaly_detected" in p.questions
+    assert "threat_severity" in p.questions
 
-    p2 = get_preset_by_id("ecommerce_review")
-    assert p2.id == "ecommerce_review"
-    assert isinstance(p2.state, str)
-    assert "complaint_target" in p2.questions
-    assert "reputation_damage" in p2.questions
-    assert "escalate_human_agent" in p2.questions
+    p2 = get_preset_by_id("ot_scada_compromised")
+    assert p2.id == "ot_scada_compromised"
+    assert isinstance(p2.state, dict)
+    assert "running_processes" in p2.state
+    assert "network_connections" in p2.state
 
     with pytest.raises(ValueError):
         get_preset_by_id("non_existent_preset")
