@@ -32,10 +32,12 @@ def test_cli_launches_studio(monkeypatch):
 
     def mock_create_window(title, html, js_api, width, height, min_size):
         called["window"] = True
+        called["js_api"] = js_api
         assert "Jev Studio" in title
         assert len(html) > 0
         assert js_api is not None
-        return MagicMock()
+        mock_win = MagicMock()
+        return mock_win
 
     def mock_start():
         called["start"] = True
@@ -46,3 +48,4 @@ def test_cli_launches_studio(monkeypatch):
     main()
     assert called.get("window") is True
     assert called.get("start") is True
+    assert called["js_api"]._window is not None

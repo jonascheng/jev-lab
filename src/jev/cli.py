@@ -42,6 +42,7 @@ def run_studio() -> None:
         height=880,
         min_size=(1024, 680),
     )
+    bridge.set_window(window)
 
     try:
         webview.start()

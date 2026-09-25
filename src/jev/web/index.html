@@ -1530,7 +1530,40 @@
     }
 
     // Import / Export JSON
-    function triggerImport() {
+    function applyImportedData(rawText) {
+      try {
+        const parsed = JSON.parse(rawText);
+        if (parsed.state !== undefined) {
+          appState.state = typeof parsed.state === "object" ? JSON.stringify(parsed.state, null, 2) : String(parsed.state);
+        }
+        if (parsed.questions && typeof parsed.questions === "object") {
+          appState.questions = parsed.questions;
+        }
+        renderState();
+        renderQuestions();
+        saveActiveSession();
+        alert("Imported state & questions successfully.");
+      } catch (err) {
+        alert(`Invalid JSON file:\n${err}`);
+      }
+    }
+
+    async function triggerImport() {
+      const bridge = getBridge();
+      if (bridge && bridge.import_file) {
+        try {
+          const res = await bridge.import_file();
+          if (res && res.success && res.content) {
+            applyImportedData(res.content);
+          } else if (res && res.error) {
+            alert(`Import failed: ${res.error}`);
+          }
+          return;
+        } catch (err) {
+          alert(`Import failed:\n${err}`);
+          return;
+        }
+      }
       document.getElementById("importFileInput").click();
     }
 
@@ -1539,36 +1572,41 @@
       if (!file) return;
       const reader = new FileReader();
       reader.onload = (e) => {
-        try {
-          const parsed = JSON.parse(e.target.result);
-          if (parsed.state !== undefined) {
-            appState.state = typeof parsed.state === "object" ? JSON.stringify(parsed.state, null, 2) : String(parsed.state);
-          }
-          if (parsed.questions && typeof parsed.questions === "object") {
-            appState.questions = parsed.questions;
-          }
-          renderState();
-          renderQuestions();
-          saveActiveSession();
-          alert("Imported state & questions successfully.");
-        } catch (err) {
-          alert(`Invalid JSON file:\n${err}`);
-        }
+        applyImportedData(e.target.result);
       };
       reader.readAsText(file);
       event.target.value = "";
     }
 
-    function exportSuite() {
+    async function exportSuite() {
       const data = {
         state: appState.state,
         questions: appState.questions
       };
-      const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+      const jsonStr = JSON.stringify(data, null, 2);
+      const filename = `jev-suite-${Date.now()}.json`;
+
+      const bridge = getBridge();
+      if (bridge && bridge.export_file) {
+        try {
+          const res = await bridge.export_file(jsonStr, filename);
+          if (res && res.success) {
+            alert(`Exported suite successfully to:\n${res.path}`);
+          } else if (res && res.error) {
+            alert(`Export failed: ${res.error}`);
+          }
+          return;
+        } catch (err) {
+          alert(`Export failed:\n${err}`);
+          return;
+        }
+      }
+
+      const blob = new Blob([jsonStr], { type: "application/json" });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `jev-suite-${Date.now()}.json`;
+      a.download = filename;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);

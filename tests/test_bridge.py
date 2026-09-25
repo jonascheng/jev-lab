@@ -211,3 +211,76 @@ def test_evaluate_api_error(monkeypatch):
     )
     assert res["success"] is False
     assert "Bad Request from CF" in res["error"]
+
+
+def test_export_file_no_window():
+    bridge = JevBridge()
+    res = bridge.export_file('{"test": true}', "test.json")
+    assert res["success"] is False
+    assert "Desktop window not available" in res["error"]
+
+
+def test_export_file_cancelled():
+    mock_window = MagicMock()
+    mock_window.create_file_dialog.return_value = None
+
+    bridge = JevBridge(window=mock_window)
+    res = bridge.export_file('{"test": true}', "test.json")
+    assert res["success"] is False
+    assert res.get("cancelled") is True
+
+
+def test_export_file_success(tmp_path):
+    save_target = tmp_path / "exported.json"
+    mock_window = MagicMock()
+    mock_window.create_file_dialog.return_value = str(save_target)
+
+    bridge = JevBridge(window=mock_window)
+    res = bridge.export_file('{"saved": 123}', "exported.json")
+    assert res["success"] is True
+    assert res["path"] == str(save_target)
+    assert save_target.read_text(encoding="utf-8") == '{"saved": 123}'
+
+
+def test_export_file_tuple_result(tmp_path):
+    save_target = tmp_path / "exported_tuple.json"
+    mock_window = MagicMock()
+    mock_window.create_file_dialog.return_value = (str(save_target),)
+
+    bridge = JevBridge()
+    bridge.set_window(mock_window)
+    res = bridge.export_file('{"tuple": true}', "exported_tuple.json")
+    assert res["success"] is True
+    assert res["path"] == str(save_target)
+    assert save_target.read_text(encoding="utf-8") == '{"tuple": true}'
+
+
+def test_import_file_no_window():
+    bridge = JevBridge()
+    res = bridge.import_file()
+    assert res["success"] is False
+    assert "Desktop window not available" in res["error"]
+
+
+def test_import_file_cancelled():
+    mock_window = MagicMock()
+    mock_window.create_file_dialog.return_value = None
+
+    bridge = JevBridge(window=mock_window)
+    res = bridge.import_file()
+    assert res["success"] is False
+    assert res.get("cancelled") is True
+
+
+def test_import_file_success(tmp_path):
+    source_file = tmp_path / "suite.json"
+    source_file.write_text('{"imported": true}', encoding="utf-8")
+
+    mock_window = MagicMock()
+    mock_window.create_file_dialog.return_value = (str(source_file),)
+
+    bridge = JevBridge(window=mock_window)
+    res = bridge.import_file()
+    assert res["success"] is True
+    assert res["content"] == '{"imported": true}'
+    assert res["filename"] == "suite.json"

@@ -2,7 +2,10 @@
 
 from __future__ import annotations
 
+from pathlib import Path
 from typing import Any, Dict, List, Optional
+
+import webview
 
 from jev import __version__
 from jev.client import JevClient, JevClientError
@@ -26,8 +29,78 @@ def mask_secret(secret: str) -> str:
 class JevBridge:
     """JS API bridge exposed to the webview window."""
 
-    def __init__(self, client: Optional[JevClient] = None) -> None:
+    def __init__(
+        self,
+        client: Optional[JevClient] = None,
+        window: Any = None,
+    ) -> None:
         self._client = client
+        self._window = window
+
+    def set_window(self, window: Any) -> None:
+        """Associate the pywebview window instance with the bridge."""
+        self._window = window
+
+    def _get_window(self) -> Any:
+        if self._window is not None:
+            return self._window
+        if getattr(webview, "windows", None):
+            return webview.windows[0]
+        return None
+
+    def export_file(
+        self,
+        content: str,
+        filename: str = "jev-suite.json",
+    ) -> Dict[str, Any]:
+        """Open native save dialog and write content to chosen file path."""
+        window = self._get_window()
+        if not window:
+            return {
+                "success": False,
+                "error": "Desktop window not available",
+            }
+
+        try:
+            result = window.create_file_dialog(
+                dialog_type=webview.FileDialog.SAVE,
+                save_filename=filename,
+                file_types=("JSON files (*.json)", "All files (*.*)"),
+            )
+            if not result:
+                return {"success": False, "cancelled": True}
+
+            filepath = result[0] if isinstance(result, (list, tuple)) else str(result)
+            target = Path(filepath)
+            target.write_text(content, encoding="utf-8")
+            return {"success": True, "path": str(target)}
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+
+    def import_file(self) -> Dict[str, Any]:
+        """Open native open dialog and read content from chosen file."""
+        window = self._get_window()
+        if not window:
+            return {
+                "success": False,
+                "error": "Desktop window not available",
+            }
+
+        try:
+            result = window.create_file_dialog(
+                dialog_type=webview.FileDialog.OPEN,
+                allow_multiple=False,
+                file_types=("JSON files (*.json)", "All files (*.*)"),
+            )
+            if not result:
+                return {"success": False, "cancelled": True}
+
+            filepath = result[0] if isinstance(result, (list, tuple)) else str(result)
+            target = Path(filepath)
+            content = target.read_text(encoding="utf-8")
+            return {"success": True, "content": content, "filename": target.name}
+        except Exception as e:
+            return {"success": False, "error": str(e)}
 
     def get_status(self) -> Dict[str, Any]:
         """Return credential and system status."""
