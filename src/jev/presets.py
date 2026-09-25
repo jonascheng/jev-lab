@@ -143,6 +143,37 @@ PRESETS: List[Preset] = [
             ),
         },
     ),
+    Preset(
+        id="ecommerce_review",
+        title="E-commerce Review Triage (抱怨對象 / 商譽影響 / 真人客服介入)",
+        description="針對電商商品與物流負評，評估客訴核心對象、商譽殺傷力及是否需真人即時介入。",
+        state="商品本身還可以，但物流真的爛透了！等了快兩個禮拜才收到，箱子都壓扁了。超爛的購物體驗！",
+        questions={
+            "complaint_target": ChoiceQuestion(
+                instructions="這則評價主要不滿的對象是商品本身、物流配送還是平台服務？",
+                criteria={
+                    "product": "主要針對商品本體品質不佳、瑕疵、功能不符等進行抱怨。",
+                    "logistics": "主要針對配送速度慢、物流態度差、外包裝破損等進行不滿。",
+                    "platform": "主要針對客服態度、APP操作、優惠券無法使用等平台機制進行抱怨。",
+                },
+            ),
+            "reputation_damage": ScoreQuestion(
+                instructions="這則評價對商譽或商品轉化率的殺傷力有多大？",
+                criteria=[
+                    "無害或輕微抱怨，不影響其他消費者購買意願。",
+                    "有明確的情緒性字眼，會降低潛在客戶的購買信心。",
+                    "極度惡劣的評價，包含強烈詛咒、呼籲集體抵制或嚴重指控。",
+                ],
+            ),
+            "escalate_human_agent": NoulQuestion(
+                instructions="這則評價是否包含極端的情緒字眼，需要立即通知店長或真人客服團隊優先處理？",
+                criteria={
+                    "true": "包含極端強烈情緒字眼或嚴重客訴，需店長或真人客服即時優先處理",
+                    "false": "一般負評抱怨，無極端情緒，正常售後流程處理",
+                },
+            ),
+        },
+    ),
 ]
 
 

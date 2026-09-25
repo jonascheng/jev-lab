@@ -27,5 +27,12 @@ def test_get_preset_by_id():
     p = get_preset_by_id("support_triage")
     assert p.id == "support_triage"
 
+    p2 = get_preset_by_id("ecommerce_review")
+    assert p2.id == "ecommerce_review"
+    assert isinstance(p2.state, str)
+    assert "complaint_target" in p2.questions
+    assert "reputation_damage" in p2.questions
+    assert "escalate_human_agent" in p2.questions
+
     with pytest.raises(ValueError):
         get_preset_by_id("non_existent_preset")
